@@ -22,9 +22,20 @@
     max-width:560px; margin:0 auto;
     font-size:15px;
   }
-  header{margin-bottom:18px;}
-  header h1{font-size:21px; font-weight:800; letter-spacing:-0.02em;}
-  header p{color:var(--sub); font-size:13px; margin-top:4px;}
+  header{margin-bottom:18px; position:relative;}
+  header h1{font-size:21px; font-weight:800; letter-spacing:-0.02em; padding-right:110px;}
+  header p{color:var(--sub); font-size:12.5px; margin-top:4px;}
+
+  /* language toggle */
+  .lang-toggle{
+    position:absolute; top:0; right:0;
+    display:flex; border:1px solid var(--accent); border-radius:8px; overflow:hidden;
+  }
+  .lang-toggle button{
+    padding:7px 12px; font-size:12.5px; font-weight:800; font-family:inherit;
+    border:none; background:#fff; color:var(--accent); cursor:pointer;
+  }
+  .lang-toggle button.active{background:var(--accent); color:#fff;}
 
   .card{
     background:var(--card); border:1px solid var(--line);
@@ -44,33 +55,42 @@
   .time-row input{flex:1;}
   .btn-now{
     padding:0 14px; border:1px solid var(--accent); color:var(--accent);
-    background:#fff; border-radius:8px; font-weight:700; font-size:13px;
-    white-space:nowrap; cursor:pointer;
+    background:#fff; border-radius:8px; font-weight:700; font-size:12.5px;
+    white-space:nowrap; cursor:pointer; font-family:inherit;
   }
 
-  /* line rows */
-  .line-row{
-    border-top:1px solid var(--line); padding:12px 0;
+  .hint{font-size:12px; color:var(--sub); margin-bottom:10px; line-height:1.5;}
+
+  .bulk{display:flex; gap:8px; margin-bottom:10px;}
+  .bulk button{
+    flex:1; padding:8px; font-size:12px; font-weight:700; font-family:inherit;
+    border:1px solid var(--line); background:#fbfcfd; color:var(--sub);
+    border-radius:8px; cursor:pointer;
   }
+
+  .line-row{border-top:1px solid var(--line); padding:12px 0;}
   .line-row:first-of-type{border-top:none; padding-top:2px;}
-  .line-head{display:flex; align-items:center; gap:10px;}
+  .line-row.excluded .seg, .line-row.excluded .line-detail{opacity:0.35; pointer-events:none;}
+  .line-row.excluded .line-name{color:#a0abb6; text-decoration:line-through;}
+  .line-head{display:flex; align-items:center; gap:8px;}
+  .chk{width:20px; height:20px; accent-color:var(--accent); flex-shrink:0; cursor:pointer;}
   .line-name{
-    font-weight:800; font-size:15px; min-width:72px;
+    font-weight:800; font-size:15px; min-width:66px;
     font-variant-numeric:tabular-nums;
   }
   .seg{display:flex; flex:1; gap:5px;}
   .seg button{
-    flex:1; padding:8px 2px; font-size:12.5px; font-weight:700;
+    flex:1; padding:8px 2px; font-size:12px; font-weight:700;
     border:1px solid var(--line); background:#fbfcfd; color:var(--sub);
-    border-radius:8px; cursor:pointer; font-family:inherit;
+    border-radius:8px; cursor:pointer; font-family:inherit; line-height:1.3;
   }
   .seg button.on-ok{background:var(--ok-bg); border-color:var(--ok); color:var(--ok);}
   .seg button.on-ng{background:var(--ng-bg); border-color:var(--ng); color:var(--ng);}
   .seg button.on-down{background:var(--down-bg); border-color:var(--down); color:var(--down);}
 
-  .line-detail{display:flex; gap:8px; margin-top:9px;}
+  .line-detail{display:flex; gap:8px; margin-top:9px; padding-left:28px;}
   .ngc{display:flex; align-items:center; gap:6px;}
-  .ngc span{font-size:12px; color:var(--sub); font-weight:700;}
+  .ngc span{font-size:11px; color:var(--sub); font-weight:700; line-height:1.2;}
   .ngc input{
     width:64px; padding:8px; text-align:center; font-weight:800;
     border:1px solid var(--line); border-radius:8px; font-size:15px;
@@ -78,14 +98,14 @@
   }
   .ngc input.has-ng{border-color:var(--ng); background:var(--ng-bg); color:var(--ng);}
   .note{flex:1;}
-  .note input{width:100%; padding:8px 10px; font-size:13.5px;
+  .note input{width:100%; padding:8px 10px; font-size:13px;
     border:1px solid var(--line); border-radius:8px; background:#fbfcfd;}
   .hidden{display:none;}
 
   textarea{min-height:74px; resize:vertical;}
 
   .submit{
-    width:100%; padding:15px; border:none; border-radius:var(--radius);
+    width:100%; padding:16px; border:none; border-radius:var(--radius);
     background:var(--accent); color:#fff; font-size:16px; font-weight:800;
     font-family:inherit; cursor:pointer; letter-spacing:-0.01em;
   }
@@ -101,85 +121,183 @@
 <body>
 
 <header>
-  <h1>📊 셀 두께 측정 리포트</h1>
-  <p>Cell Thickness Measurement Report — 저장 후 카톡 보고 양식이 자동 복사됩니다</p>
+  <div class="lang-toggle">
+    <button type="button" id="btn-ko" onclick="setLang('ko')">한국어</button>
+    <button type="button" id="btn-en" onclick="setLang('en')">EN</button>
+  </div>
+  <h1 id="t-title"></h1>
+  <p id="t-subtitle"></p>
 </header>
 
 <div class="card">
-  <h2>1. 기본 정보</h2>
-  <label for="mtime">측정 시간 *</label>
+  <h2 id="t-sec1"></h2>
+  <label for="mtime" id="t-mtime"></label>
   <div class="time-row">
     <input type="datetime-local" id="mtime">
-    <button type="button" class="btn-now" onclick="setNow()">현재시간</button>
+    <button type="button" class="btn-now" id="t-now" onclick="setNow()"></button>
   </div>
   <div style="height:12px"></div>
-  <label for="pic">작업자 (PIC) *</label>
-  <input type="text" id="pic" placeholder="이름 입력">
+  <label for="pic" id="t-pic"></label>
+  <input type="text" id="pic">
 </div>
 
 <div class="card">
-  <h2>2. 라인별 두께 측정 현황</h2>
-  <p style="font-size:12.5px;color:var(--sub);margin-bottom:12px;">
-    기본값은 <b style="color:var(--ok)">양호</b>입니다. 미양호/부동 라인만 변경하세요.<br>
-    NG 칸에는 두께 NG 수량(숫자)을 입력하세요.
-  </p>
+  <h2 id="t-sec2"></h2>
+  <p class="hint" id="t-hint"></p>
+  <div class="bulk">
+    <button type="button" id="t-checkall" onclick="setAll(true)"></button>
+    <button type="button" id="t-uncheckall" onclick="setAll(false)"></button>
+  </div>
   <div id="lines"></div>
 </div>
 
 <div class="card">
-  <h2>3. 특이사항</h2>
-  <textarea id="remark" placeholder="전체 특이사항이 있으면 작성 (선택)"></textarea>
+  <h2 id="t-sec3"></h2>
+  <textarea id="remark"></textarea>
 </div>
 
-<button class="submit" onclick="submitReport()">💾 저장 및 리포트 복사 (Save &amp; Copy)</button>
+<button class="submit" id="t-submit" onclick="submitReport()"></button>
 <div class="status-msg" id="msg"></div>
 
 <footer>Made with Claude</footer>
 
 <script>
-/* ================= 설정 =================
+/* ================= 설정 (Config) =================
    구글 Apps Script 웹앱 배포 URL을 여기에 붙여넣으세요.
+   Paste your Google Apps Script Web App URL below.
    비워두면 시트 저장 없이 카톡 양식 복사만 됩니다. */
 const SCRIPT_URL = "";
-/* ======================================= */
+/* ================================================ */
 
 const LINES = ["하프라미1","하프라미2",
   "1-1","1-2","1-3","1-4","1-5","1-6","1-7",
   "2-1","2-2","2-3","2-4","2-5","2-6","2-7",
   "3-1"];
+// 카톡 보고에 표시되는 라인 이름 (영문)
+const LINE_REPORT_NAME = {"하프라미1":"Half lami 1","하프라미2":"Half lami 2"};
+// 화면에 표시되는 라인 이름 (언어별)
+const LINE_UI_EN = {"하프라미1":"H-lami 1","하프라미2":"H-lami 2"};
+
 const STATUSES = [
-  {key:"양호", cls:"on-ok"},
-  {key:"미양호", cls:"on-ng"},
-  {key:"라인 부동", cls:"on-down"}
+  {key:"양호",     ko:"양호",     en:"Normal",   report:"normal pattern",   cls:"on-ok"},
+  {key:"미양호",   ko:"미양호",   en:"Abnormal", report:"abnormal pattern", cls:"on-ng"},
+  {key:"라인 부동", ko:"라인 부동", en:"Not run",  report:"not running",      cls:"on-down"}
 ];
-const state = {}; // {line: {status, ng, note}}
+
+/* ---------- 번역 사전 (Translations) ---------- */
+const T = {
+  ko:{
+    title:"📊 셀 두께 측정 리포트",
+    subtitle:"저장하면 카톡 보고 양식이 자동으로 복사됩니다",
+    sec1:"1. 기본 정보", mtime:"측정 시간 *", now:"현재시간", pic:"작업자 (PIC) *",
+    picPh:"이름 입력",
+    sec2:"2. 라인별 두께 측정 현황",
+    hint:"☑ 체크된 라인만 카톡 보고에 포함됩니다. 미운영 라인은 체크를 해제하세요.\nNG 칸에는 랏 간 NG 갯수(12시간 랏 체인지 전까지 누적)를 입력하세요.",
+    checkall:"전체 포함", uncheckall:"전체 제외",
+    ngLabel:"랏 간<br>NG", notePh:"현상 작성",
+    sec3:"3. 특이사항", remarkPh:"전체 특이사항 작성 (선택)",
+    submit:"💾 저장 및 리포트 복사",
+    errTime:"⚠️ 측정 시간을 선택하세요", errPic:"⚠️ 작업자 이름을 입력하세요",
+    errLine:"⚠️ 보고에 포함할 라인을 1개 이상 체크하세요",
+    okSaved:"✅ 저장 완료! 카톡 양식이 복사되었습니다",
+    okCopyOnly:"✅ 카톡 양식이 복사되었습니다 (시트 미연결)",
+    warnSheet:"⚠️ 시트 저장 실패 · 복사는 완료되었습니다"
+  },
+  en:{
+    title:"📊 Cell Thickness Report",
+    subtitle:"The KakaoTalk report is auto-copied after saving",
+    sec1:"1. Basic Info", mtime:"Measurement Time *", now:"Now", pic:"PIC *",
+    picPh:"Enter name",
+    sec2:"2. Thickness Status by Line",
+    hint:"☑ Only checked lines are included in the report. Uncheck lines that are not running.\nEnter the NG count per lot (accumulated before the 12-hour lot change).",
+    checkall:"Check all", uncheckall:"Uncheck all",
+    ngLabel:"NG<br>per lot", notePh:"Describe phenomenon",
+    sec3:"3. Remarks", remarkPh:"Optional remarks",
+    submit:"💾 Save & Copy Report",
+    errTime:"⚠️ Please select the measurement time", errPic:"⚠️ Please enter the PIC name",
+    errLine:"⚠️ Check at least one line to include",
+    okSaved:"✅ Saved! Report copied to clipboard",
+    okCopyOnly:"✅ Report copied (sheet not linked)",
+    warnSheet:"⚠️ Sheet save failed · report was copied"
+  }
+};
+
+let lang = "ko";
+try{ lang = localStorage.getItem("ctr-lang") || "ko"; }catch(e){}
+
+const state = {}; // {line: {status, ng, note, included}}
+
+function reportName(name){ return LINE_REPORT_NAME[name] || name; }
+function uiName(name){ return lang==="en" ? (LINE_UI_EN[name]||name) : name; }
+
+function setLang(l){
+  lang = l;
+  try{ localStorage.setItem("ctr-lang", l); }catch(e){}
+  applyLang();
+}
+
+function applyLang(){
+  const t = T[lang];
+  document.getElementById("btn-ko").classList.toggle("active", lang==="ko");
+  document.getElementById("btn-en").classList.toggle("active", lang==="en");
+  document.getElementById("t-title").textContent = t.title;
+  document.getElementById("t-subtitle").textContent = t.subtitle;
+  document.getElementById("t-sec1").textContent = t.sec1;
+  document.getElementById("t-mtime").textContent = t.mtime;
+  document.getElementById("t-now").textContent = t.now;
+  document.getElementById("t-pic").textContent = t.pic;
+  document.getElementById("pic").placeholder = t.picPh;
+  document.getElementById("t-sec2").textContent = t.sec2;
+  document.getElementById("t-hint").innerText = t.hint;
+  document.getElementById("t-checkall").textContent = t.checkall;
+  document.getElementById("t-uncheckall").textContent = t.uncheckall;
+  document.getElementById("t-sec3").textContent = t.sec3;
+  document.getElementById("remark").placeholder = t.remarkPh;
+  document.getElementById("t-submit").textContent = t.submit;
+  // dynamic rows
+  document.querySelectorAll(".line-name").forEach(el=>{ el.textContent = uiName(el.dataset.name); });
+  document.querySelectorAll(".seg button").forEach(btn=>{
+    const s = STATUSES.find(x=>x.key===btn.dataset.s);
+    btn.textContent = lang==="en" ? s.en : s.ko;
+  });
+  document.querySelectorAll(".ngc span").forEach(el=>{ el.innerHTML = t.ngLabel; });
+  document.querySelectorAll("[data-note]").forEach(inp=>{ inp.placeholder = t.notePh; });
+}
 
 function buildRows(){
   const wrap = document.getElementById("lines");
   LINES.forEach(name=>{
-    state[name] = {status:"양호", ng:0, note:""};
+    state[name] = {status:"양호", ng:0, note:"", included:true};
     const row = document.createElement("div");
     row.className = "line-row";
+    row.dataset.row = name;
     row.innerHTML = `
       <div class="line-head">
-        <div class="line-name">${name}</div>
+        <input type="checkbox" class="chk" checked data-chk="${name}">
+        <div class="line-name" data-name="${name}"></div>
         <div class="seg">
           ${STATUSES.map((s,i)=>`<button type="button" data-line="${name}" data-s="${s.key}"
-            class="${i===0?s.cls:''}">${s.key}</button>`).join("")}
+            class="${i===0?s.cls:''}"></button>`).join("")}
         </div>
       </div>
       <div class="line-detail">
-        <div class="ngc"><span>NG</span>
+        <div class="ngc"><span></span>
           <input type="number" min="0" inputmode="numeric" value="0" data-ng="${name}">
         </div>
         <div class="note hidden" data-notebox="${name}">
-          <input type="text" placeholder="현상 작성 (예: 파형 흔들림)" data-note="${name}">
+          <input type="text" data-note="${name}">
         </div>
       </div>`;
     wrap.appendChild(row);
   });
 
-  // status buttons
+  wrap.querySelectorAll("[data-chk]").forEach(chk=>{
+    chk.addEventListener("change", ()=>{
+      const name = chk.dataset.chk;
+      state[name].included = chk.checked;
+      wrap.querySelector(`[data-row="${name}"]`).classList.toggle("excluded", !chk.checked);
+    });
+  });
   wrap.querySelectorAll(".seg button").forEach(btn=>{
     btn.addEventListener("click", ()=>{
       const line = btn.dataset.line, s = btn.dataset.s;
@@ -187,11 +305,9 @@ function buildRows(){
       const cls = STATUSES.find(x=>x.key===s).cls;
       btn.parentElement.querySelectorAll("button").forEach(b=>b.className="");
       btn.className = cls;
-      const box = wrap.querySelector(`[data-notebox="${line}"]`);
-      box.classList.toggle("hidden", s==="양호");
+      wrap.querySelector(`[data-notebox="${line}"]`).classList.toggle("hidden", s==="양호");
     });
   });
-  // ng inputs
   wrap.querySelectorAll("[data-ng]").forEach(inp=>{
     inp.addEventListener("input", ()=>{
       const v = Math.max(0, parseInt(inp.value)||0);
@@ -199,9 +315,14 @@ function buildRows(){
       inp.classList.toggle("has-ng", v>0);
     });
   });
-  // notes
   wrap.querySelectorAll("[data-note]").forEach(inp=>{
     inp.addEventListener("input", ()=>{ state[inp.dataset.note].note = inp.value.trim(); });
+  });
+}
+
+function setAll(on){
+  document.querySelectorAll("[data-chk]").forEach(chk=>{
+    if(chk.checked !== on){ chk.checked = on; chk.dispatchEvent(new Event("change")); }
   });
 }
 
@@ -213,52 +334,54 @@ function setNow(){
 
 function fmtTime(v){
   const d = new Date(v);
-  const days = ["일","월","화","수","목","금","토"];
+  const daysEn = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
   const p = n=>String(n).padStart(2,"0");
-  return `${p(d.getMonth()+1)}/${p(d.getDate())}(${days[d.getDay()]}) ${p(d.getHours())}:${p(d.getMinutes())}`;
+  return `${p(d.getMonth()+1)}/${p(d.getDate())}(${daysEn[d.getDay()]}) ${p(d.getHours())}:${p(d.getMinutes())}`;
 }
 
-function buildReport(mtime, pic, remark){
-  const ok=[], ng=[], down=[];
-  LINES.forEach(l=>{
-    const s = state[l].status;
-    if(s==="양호") ok.push(l);
-    else if(s==="미양호") ng.push(l);
-    else down.push(l);
-  });
-  const ngLines = LINES.filter(l=>state[l].ng>0);
-  const totalNG = LINES.reduce((a,l)=>a+state[l].ng,0);
-  const notes = LINES.filter(l=>state[l].note);
+function statusReport(key){ return STATUSES.find(s=>s.key===key).report; }
 
-  let t = `📊 셀 두께 측정 리포트\n`;
-  t += `🕐 측정 시간 : ${fmtTime(mtime)}\n`;
-  t += `👤 작업자 : ${pic}\n\n`;
-  t += `■ 그래프 현황\n`;
-  t += `· 양호 (${ok.length}) : ${ok.length? ok.join(", ") : "없음"}\n`;
-  if(ng.length)   t += `· 미양호 (${ng.length}) : ${ng.join(", ")}\n`;
-  if(down.length) t += `· 라인 부동 (${down.length}) : ${down.join(", ")}\n`;
-  t += `\n■ 두께 NG 현황 (합계 ${totalNG}개)\n`;
-  t += ngLines.length ? ngLines.map(l=>`· ${l} : ${state[l].ng}개`).join("\n")+"\n" : `· NG 없음\n`;
-  if(notes.length || remark){
-    t += `\n■ 현상 / 특이사항\n`;
-    notes.forEach(l=> t += `· ${l} : ${state[l].note}\n`);
-    if(remark) t += `· ${remark}\n`;
+/* 카톡 보고 양식 — 언어 설정과 무관하게 동일한 형식으로 복사됩니다 */
+function buildReport(mtime, pic, remark){
+  const inc = LINES.filter(l=>state[l].included);
+  const ngLines = inc.filter(l=>state[l].ng>0);
+  const totalNG = inc.reduce((a,l)=>a+state[l].ng,0);
+
+  let t = `📊 Thickness measurement graph report\n`;
+  t += `🕐 ${fmtTime(mtime)}\n`;
+  t += `👤 PIC : ${pic}\n\n`;
+
+  inc.forEach(l=>{
+    t += `${reportName(l)} : ${statusReport(state[l].status)}`;
+    if(state[l].note) t += ` (${state[l].note})`;
+    t += `\n`;
+  });
+
+  t += `\n■ 각 랏 간 NG 갯수 (NG count per lot)\n`;
+  if(ngLines.length){
+    ngLines.forEach(l=> t += `· ${reportName(l)} : ${state[l].ng}\n`);
+    t += `· Total : ${totalNG}\n`;
+  }else{
+    t += `· NG 없음 (No NG)\n`;
   }
+
+  if(remark) t += `\n■ 특이사항 (Remarks)\n· ${remark}\n`;
   return t.trim();
 }
 
 async function submitReport(){
+  const t = T[lang];
   const msg = document.getElementById("msg");
   const mtime = document.getElementById("mtime").value;
   const pic = document.getElementById("pic").value.trim();
   const remark = document.getElementById("remark").value.trim();
 
-  if(!mtime){ msg.textContent="⚠️ 측정 시간을 선택하세요"; msg.className="status-msg err"; return; }
-  if(!pic){ msg.textContent="⚠️ 작업자 이름을 입력하세요"; msg.className="status-msg err"; return; }
+  if(!mtime){ msg.textContent=t.errTime; msg.className="status-msg err"; return; }
+  if(!pic){ msg.textContent=t.errPic; msg.className="status-msg err"; return; }
+  if(!LINES.some(l=>state[l].included)){ msg.textContent=t.errLine; msg.className="status-msg err"; return; }
 
   const report = buildReport(mtime, pic, remark);
 
-  // 1) 클립보드 복사
   try{ await navigator.clipboard.writeText(report); }
   catch(e){
     const ta = document.createElement("textarea");
@@ -266,7 +389,6 @@ async function submitReport(){
     ta.select(); document.execCommand("copy"); ta.remove();
   }
 
-  // 2) 구글 시트 저장
   let saved = false;
   if(SCRIPT_URL){
     try{
@@ -275,7 +397,12 @@ async function submitReport(){
         headers:{"Content-Type":"text/plain"},
         body: JSON.stringify({
           mtime, pic, remark,
-          lines: LINES.map(l=>({name:l, ...state[l]}))
+          lines: LINES.map(l=>({
+            name:l,
+            status: state[l].included ? state[l].status : "제외(미운영)",
+            ng: state[l].included ? state[l].ng : 0,
+            note: state[l].included ? state[l].note : ""
+          }))
         })
       });
       saved = true;
@@ -283,13 +410,13 @@ async function submitReport(){
   }
 
   msg.className="status-msg";
-  msg.textContent = SCRIPT_URL
-    ? (saved ? "✅ 저장 완료! 카톡 양식이 복사되었습니다" : "⚠️ 시트 저장 실패 · 복사는 완료됨")
-    : "✅ 카톡 양식이 복사되었습니다 (시트 미연결)";
+  msg.textContent = SCRIPT_URL ? (saved ? t.okSaved : t.warnSheet) : t.okCopyOnly;
 }
 
 buildRows();
+applyLang();
 setNow();
 </script>
 </body>
 </html>
+
